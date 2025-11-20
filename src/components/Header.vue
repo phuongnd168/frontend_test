@@ -29,7 +29,13 @@ const API_BASE_URL = "https://karson-semicathartic-nondeprecatively.ngrok-free.d
 
 const getCategories = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/categories`);
+    const response = await axios.get(`${API_BASE_URL}/categories`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "69420",
+      },
+    });
 
     return response.data;
   } catch (error) {
@@ -39,7 +45,13 @@ const getCategories = async () => {
 };
 const getProducts = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/products`);
+    const response = await axios.get(`${API_BASE_URL}/products`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "69420",
+      },
+    });
 
     return response.data;
   } catch (error) {
