@@ -3,11 +3,16 @@
 </template>
 
 <script setup>
+import axios from "axios";
+
 const pay = async () => {
-  const res = await axios.post("https://your-api.com/api/vnpay/create", {
-    amount: 50000,
-    orderInfo: "Thanh toan don hang 123",
-  });
+  const res = await axios.post(
+    "https://karson-semicathartic-nondeprecatively.ngrok-free.dev/vnpay/create",
+    {
+      amount: 50000,
+      orderInfo: "Thanh toan don hang 123",
+    }
+  );
 
   window.location.href = res.data.paymentUrl;
 };
