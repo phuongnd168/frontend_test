@@ -7,12 +7,20 @@ import * as yup from "yup";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const { locale } = useI18n();
+
+import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import RadioButton from "primevue/radiobutton";
-import RadioButtonGroup from "primevue/radiobuttongroup";
 import Button from "primevue/button";
 import router from "@/router";
-const formOfPayment = ref("cash");
+const loading = ref(false);
+const getBill = ref("noReceipt");
+const showBill = () => {
+  if (getBill.value === "noReceipt") {
+    return false;
+  }
+  return true;
+};
 onMounted(() => {
   try {
     if (!localStorage.getItem("language")) {
@@ -102,27 +110,140 @@ const { defineField, errors, handleSubmit } = useForm({
     name: yup.string().required(() => t("message.requiredNameTitle")),
     phone: yup
       .string()
-      .required(() => t("message.requiredPhoneTitle"))
-      .matches(/(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/, () =>
-        t("message.formatPhoneTitle")
-      ),
+      .matches(/(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/, {
+        message: () => t("message.formatPhoneTitle"),
+        excludeEmptyString: true,
+      })
+      .notRequired(),
+    taxCode: yup.string().when({
+      is: () => getBill.value === "getInvoice", // điều kiện phải validate
+      then: (schema) =>
+        schema
+          .required(() => t("message.requiredTaxCode"))
+          .matches(/^(?:\d{10}|\d{10}-\d{3}|\d{12})$/, () =>
+            t("message.formatTaxCodeTitle")
+          ),
+      otherwise: (schema) => schema.notRequired(),
+    }),
   }),
 });
-
 const [phone, phoneAttrs] = defineField("phone");
 const [name, nameAttrs] = defineField("name");
 
-const onSubmit = handleSubmit((values, { resetForm }) => {
-  console.log(values);
-  resetForm();
+const [taxCode, taxCodeAttrs] = defineField("taxCode");
+const [budgetRelationshipCode, budgetRelationshipCodeAttrs] = defineField(
+  "budgetRelationshipCode"
+);
+
+const [companyName, companyNameAttrs] = defineField("companyName");
+const [companyAddress, companyAddressAttrs] = defineField("companyAddress");
+const values = reactive({});
+const onSubmit = handleSubmit((data) => {
+  if (getBill.value === "noReceipt") {
+    values.name = data.name;
+    values.phone = data.phone;
+  } else {
+    values.name = data.name;
+    values.phone = data.phone;
+    values.taxCode = data.taxCode;
+
+    values.budgetRelationshipCode = data.budgetRelationshipCode;
+    values.companyName = data.companyName;
+    values.companyAddress = data.companyAddress;
+  }
+
+  showConfirm();
 });
+
+const nameDialog = ref("");
+const visible = ref(false);
+const showConfirm = () => {
+  visible.value = true;
+
+  nameDialog.value =
+    t("message.yourOrderTitle") +
+    " (" +
+    (check.value ?? 0) +
+    " " +
+    t("message.orderUnit") +
+    addString() +
+    ")";
+};
+const checkCount = (product) => {
+  return count(product) >= product.quantity;
+};
+async function OrderComplete() {
+  loading.value = true;
+  try {
+    const dataPatch = [];
+
+    carts.forEach((cart) => {
+      dataPatch.push({
+        id: cart.id,
+        count: cart.count,
+      });
+    });
+    const dataPost = [];
+    carts.forEach((cart) => {
+      dataPost.carts.push({
+        id: cart.id,
+        count: cart.count,
+        price: cart.price,
+        totalPrice: cart.price * cart.count,
+        nameEn: cart.nameEn,
+        nameVi: cart.nameVi,
+        img: cart.img,
+      });
+    });
+
+    const value = dataPost.map((x) => JSON.stringify(x)).join(",");
+
+    const responsePost = await fetch(`http://localhost:5097/api/orderProduct`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: 8,
+        products: value,
+      }),
+    });
+    if (!responsePost.ok) {
+      throw new Error(`Error: ${responsePost.status}`);
+    }
+    const responsePatch = await fetch(`http://localhost:5097/api/products`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataPatch),
+    });
+    if (!responsePatch.ok) {
+      throw new Error(`Error: ${responsePatch.status}`);
+    }
+    sessionStorage.removeItem("carts");
+    sessionStorage.setItem("order", true);
+  } catch (error) {
+    console.error("Failed to update product:", error);
+  } finally {
+    loading.value = false;
+  }
+
+  router.push({ name: "Home" });
+}
 function goToHome() {
   router.push({ name: "Home" });
 }
 </script>
 <template>
   <div class="flex justify-content-center">
-    <Button class="m-2" icon="pi pi-arrow-left" @click="goToHome" severity="info" />
+    <Button
+      class="m-2"
+      icon="pi pi-arrow-left"
+      @click="goToHome"
+      severity="info"
+      rounded
+    />
     <div class="w-6">
       <h2>{{ $t("message.orderInfoTitle") }}</h2>
       <p>{{ $t("message.orderInfoSubTitle") }}</p>
@@ -134,6 +255,7 @@ function goToHome() {
       severity="info"
       @click="setLocale()"
       :label="language === 'vi' ? 'EN' : 'VI'"
+      rounded
     />
   </div>
   <div class="flex justify-content-center">
@@ -148,39 +270,165 @@ function goToHome() {
         ")"
       }}</template>
       <template #content>
+        <Dialog
+          v-model:visible="visible"
+          modal
+          :style="{ width: '480px' }"
+          class="rounded-3xl overflow-hidden"
+        >
+          <!-- HEADER -->
+          <template #header>
+            <div class="flex items-center justify-between w-full">
+              <h2 class="text-xl font-bold text-gray-800">
+                {{ nameDialog }}
+              </h2>
+            </div>
+          </template>
+
+          <!-- BODY -->
+          <div class="p-5 space-y-6">
+            <!-- Danh sách sản phẩm -->
+            <div class="space-y-4">
+              <div
+                v-for="product in carts"
+                :key="product.id"
+                class="flex gap-3 bg-gray-50 p-3 rounded-xl shadow-sm border border-gray-200"
+              >
+                <img
+                  :src="product.img"
+                  class="w-16 h-16 object-cover rounded-lg shadow"
+                  alt="product"
+                />
+
+                <div class="flex-1">
+                  <div class="font-semibold text-gray-800">
+                    {{ language === "vi" ? product.nameVi : product.nameEn }}
+                    {{
+                      "(" +
+                      product.price.toLocaleString("vi-VN") +
+                      "đ" +
+                      " x " +
+                      product.count +
+                      ")"
+                    }}
+                  </div>
+
+                  <div class="text-blue-600 font-bold mt-1">
+                    {{ (product.price * product.count).toLocaleString("vi-VN") }}đ
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Thông tin khách hàng -->
+            <div class="bg-white rounded-2xl p-4 shadow border border-gray-100 space-y-2">
+              <h3 class="text-lg font-bold text-gray-800 mb-2">
+                {{ $t("message.titleForm") }}
+              </h3>
+
+              <div class="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                <span class="text-gray-500">{{ $t("message.nameInputName") + ":" }}</span>
+                <span class="font-medium text-gray-700">{{ values.name }}</span>
+              </div>
+
+              <div class="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                <span class="text-gray-500">{{
+                  $t("message.nameInputPhone") + ":"
+                }}</span>
+                <span class="font-medium text-gray-700">{{ values.phone }}</span>
+              </div>
+
+              <div class="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                <span class="text-gray-500">{{
+                  $t("message.nameInputTaxCode") + ":"
+                }}</span>
+                <span class="font-medium text-gray-700">{{ values.taxCode }}</span>
+              </div>
+
+              <div class="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                <span class="text-gray-500">{{
+                  $t("message.nameInputBudgetRelationshipCode") + ":"
+                }}</span>
+                <span class="font-medium text-gray-700">{{
+                  values.budgetRelationshipCode
+                }}</span>
+              </div>
+
+              <div class="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                <span class="text-gray-500">{{
+                  $t("message.nameInputCompanyName") + ":"
+                }}</span>
+                <span class="font-medium text-gray-700">{{ values.companyName }}</span>
+              </div>
+
+              <div class="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                <span class="text-gray-500">{{
+                  $t("message.nameInputCompanyAddress") + ":"
+                }}</span>
+                <span class="font-medium text-gray-700">{{ values.companyAddress }}</span>
+              </div>
+            </div>
+
+            <!-- Tổng cộng -->
+            <div
+              class="flex justify-between text-xl font-bold text-gray-900 pt-4 border-t"
+            >
+              <span>{{ $t("message.totalPrice") + ":" }}</span>
+              <span class="text-blue-600">{{ price.toLocaleString("vi-VN") }}đ</span>
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <template #footer>
+            <Button
+              @click="OrderComplete()"
+              rounded
+              severity="info"
+              :loading="loading"
+              class="w-full"
+              :label="$t('message.buttonOrderConfirmation')"
+            />
+          </template>
+        </Dialog>
+
         <div v-for="product in carts" class="flex justify-content-between">
           <div class="flex justify-content-start">
             <img alt="food" :src="product.img" class="product-card p-2" />
             <div class="flex flex-column-reverse gap-3">
               <p>{{ (product.price * product.count).toLocaleString("vi-VN") }}đ</p>
-              <p>{{ language === "vi" ? product.nameVi : product.nameEn }}</p>
+              <p>
+                {{ language === "vi" ? product.nameVi : product.nameEn }}
+                {{ "x" + product.count }}
+              </p>
             </div>
           </div>
 
           <div class="flex align-items-center gap-2">
             <Button
+              rounded
               :disabled="checkDisable(product)"
               @click="removeCart(product)"
               icon="pi pi-minus m-2"
-              severity="secondary"
-              style="height: 40px"
+              severity="danger"
+              variant="outlined"
             />
 
-            <span class="m-2" style="min-width: 28px; text-align: center">{{
-              count(product)
-            }}</span>
+            <span class="m-2">{{ count(product) }}</span>
 
             <Button
               @click="addCart(product)"
               icon="pi pi-plus m-2"
-              severity="secondary"
-              style="height: 40px"
+              severity="primary"
+              variant="outlined"
+              :disabled="checkCount(product)"
+              rounded
             />
             <Button
               @click="deleteCart(product)"
               icon="pi pi-trash m-2"
-              severity="secondary"
-              style="height: 40px"
+              severity="danger"
+              variant="outlined"
+              rounded
             />
           </div>
         </div>
@@ -208,7 +456,7 @@ function goToHome() {
             <label for="name">{{ $t("message.nameInputName") }}</label>
             <InputText
               id="name"
-              :placeholder="$t('message.nameInputName')"
+              :placeholder="$t('message.placeholderInputName')"
               class="w-full"
               v-model="name"
               v-bind="nameAttrs"
@@ -229,15 +477,65 @@ function goToHome() {
           </div>
 
           <!-- Ghi chú -->
-
-          <div class="flex flex-wrap gap-4">
+          <label>{{ $t("message.nameInputBill") }}</label>
+          <div class="flex flex-wrap gap-4 p-2">
             <div class="flex items-center gap-2">
-              <RadioButton value="cash" v-model="formOfPayment" />
-              <label>Tiền mặt</label>
+              <RadioButton value="noReceipt" v-model="getBill" />
+              <label>{{ $t("message.nameRadioNoReceipt") }}</label>
             </div>
             <div class="flex items-center gap-2">
-              <RadioButton value="transfer" v-model="formOfPayment" />
-              <label>Chuyển khoản</label>
+              <RadioButton value="getInvoice" v-model="getBill" />
+              <label>{{ $t("message.nameRadioNoGetInvoice") }}</label>
+            </div>
+          </div>
+          <div v-if="showBill()">
+            <div class="field mb-3">
+              <label for="taxCode">{{ $t("message.nameInputTaxCode") }}</label>
+              <InputText
+                id="taxCode"
+                class="w-full"
+                v-model="taxCode"
+                v-bind="taxCodeAttrs"
+                :placeholder="$t('message.placeholderTaxCode')"
+              />
+              <span class="p-error"> {{ errors.taxCode }}</span>
+            </div>
+
+            <div class="field mb-3">
+              <label for="budgetRelationshipCode">{{
+                $t("message.nameInputBudgetRelationshipCode")
+              }}</label>
+              <InputText
+                id="budgetRelationshipCode"
+                class="w-full"
+                v-model="budgetRelationshipCode"
+                v-bind="budgetRelationshipCodeAttrs"
+                :placeholder="$t('message.placeholderBudgetRelationshipCode')"
+              />
+            </div>
+
+            <div class="field mb-3">
+              <label for="companyName">{{ $t("message.nameInputCompanyName") }}</label>
+              <InputText
+                id="companyName"
+                class="w-full"
+                v-model="companyName"
+                v-bind="companyNameAttrs"
+                :placeholder="$t('message.placeholderCompanyName')"
+              />
+            </div>
+
+            <div class="field mb-3">
+              <label for="companyAddress">{{
+                $t("message.nameInputCompanyAddress")
+              }}</label>
+              <InputText
+                id="companyAddress"
+                class="w-full"
+                v-model="companyAddress"
+                v-bind="companyAddressAttrs"
+                :placeholder="$t('message.placeholderCompanyAddress')"
+              />
             </div>
           </div>
           <div class="flex justify-content-evenly align-center p-2">
@@ -246,8 +544,15 @@ function goToHome() {
               class="col-5"
               label="Quay lại"
               severity="contrast"
+              rounded
             />
-            <Button severity="info" class="col-5" label="Tiếp tục" type="submit" />
+            <Button
+              rounded
+              severity="info"
+              class="col-5"
+              label="Tiếp tục"
+              type="submit"
+            />
           </div>
         </Form>
       </template>

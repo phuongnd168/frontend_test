@@ -3,6 +3,7 @@
 </template>
 
 <script setup>
+import { data } from "autoprefixer";
 import axios from "axios";
 
 const pay = async () => {
@@ -13,7 +14,7 @@ const pay = async () => {
       orderInfo: "Thanh toan don hang 123",
     }
   );
-
-  window.location.href = res.data.paymentUrl;
+  console.log(res.data);
+  // window.location.href = res.data.paymentUrl;
 };
 </script>

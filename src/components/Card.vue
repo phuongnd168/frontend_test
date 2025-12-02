@@ -4,50 +4,81 @@
   </Dialog>
   <div class="grid m-3">
     <div class="col-4" v-for="product in products" :key="product.id">
-      <Card class="shadow-3 hover-lift transition-all duration-300">
-        <template #header>
-          <img
-            @click="showImage(product.Img, product.NameVi, product.NameEn, product.Price)"
-            class="product-card"
-            alt="food"
-            :src="product.Img"
-          />
-        </template>
+      <Card
+        class="shadow-3 hover-lift transition-all duration-300"
+        style="white-space: nowrap"
+      >
+        <template #subtitle>
+          <div class="flex justify-content-between align-items-center">
+            <div class="flex align-items-center">
+              <img
+                @click="
+                  showImage(product.Img, product.NameVi, product.NameEn, product.Price)
+                "
+                class="product-card"
+                alt="food"
+                :src="product.Img"
+              />
+              <div class="p-2 product-info">
+                <p class="text-1xl font-bold product-name">
+                  {{ props.language === "vi" ? product.NameVi : product.NameEn }}
+                </p>
 
-        <template #title>{{
-          props.language === "vi" ? product.NameVi : product.NameEn
-        }}</template>
-        <template #subtitle>{{ product.Price.toLocaleString("vi-VN") }}đ</template>
+                <p class="text-1xl font-bold">
+                  {{ product.Price.toLocaleString("vi-VN") }}đ
+                </p>
+                <label
+                  :class="
+                    product.Quantity > 0
+                      ? 'bg-green-100 text-sm p-1'
+                      : 'bg-red-100 text-sm p-1'
+                  "
+                >
+                  {{ $t("message.quantityTitle") + ": " + product.Quantity }}
+                </label>
+              </div>
+            </div>
+            <div>
+              <Button
+                @click="removeCart(product)"
+                v-if="check(product)"
+                icon="pi pi-minus m-2"
+                severity="danger"
+                variant="outlined"
+                rounded
+              />
 
-        <template #content>
-          <Button
-            @click="removeCart(product)"
-            v-if="check(product)"
-            icon="pi pi-minus m-2"
-            severity="secondary"
-            style="height: 40px"
-          />
+              <span class="m-2" v-if="check(product)">{{ count(product) }}</span>
 
-          <span class="m-2" v-if="check(product)">{{ count(product) }}</span>
+              <Button
+                @click="addCart(product)"
+                v-if="check(product)"
+                icon="pi pi-plus m-2"
+                severity="primary"
+                variant="outlined"
+                :disabled="checkCount(product)"
+                rounded
+              />
 
-          <Button
-            @click="addCart(product)"
-            v-if="check(product)"
-            icon="pi pi-plus m-2"
-            severity="secondary"
-            style="height: 40px"
-          />
-
-          <Button
-            severity="info"
-            v-if="!check(product)"
-            icon="pi pi-plus"
-            :label="$t('message.buttonAdd')"
-            @click="addCart(product)"
-            style="height: 40px"
-          />
-        </template>
-        <template #footer> </template>
+              <Button
+                severity="danger"
+                disabled="true"
+                v-if="!product.Quantity"
+                icon="pi pi-times"
+                class="text-sm h-8"
+                :label="$t('message.buttonSoldOut')"
+                rounded
+              />
+              <Button
+                v-if="product.Quantity && !check(product)"
+                icon="pi pi-plus"
+                :label="$t('message.buttonAdd')"
+                class="text-sm h-8"
+                @click="addCart(product)"
+                rounded
+              />
+            </div></div
+        ></template>
       </Card>
     </div>
   </div>
@@ -70,6 +101,9 @@ const props = defineProps({
 const data = sessionStorage.getItem("carts");
 const carts = reactive(JSON.parse(data) ?? []);
 
+const checkCount = (product) => {
+  return count(product) >= product.Quantity;
+};
 const addCart = (product) => {
   if (carts?.length) {
     const index = carts.findIndex((cart) => cart.id === product.Id);
@@ -84,17 +118,19 @@ const addCart = (product) => {
       nameEn: product.NameEn,
       img: product.Img,
       price: product.Price,
+      quantity: product.Quantity,
       count: 1,
     });
     return;
   }
-  console.log(carts);
+
   carts.push({
     id: product.Id,
     nameVi: product.NameVi,
     nameEn: product.NameEn,
     img: product.Img,
     price: product.Price,
+    quantity: product.Quantity,
     count: 1,
   });
 };
@@ -171,5 +207,15 @@ const showImage = (productImg, productNameVi, productNameEn, productPrice) => {
 }
 .hover-lift:hover {
   transform: translateY(-5px);
+}
+.product-info {
+  min-width: 0; /* cho phép co lại thay vì đẩy buttons */
+}
+
+.product-name {
+  display: inline-block;
+  max-width: 180px; /* độ rộng giới hạn */
+  transform-origin: left; /* thu nhỏ từ trái sang */
+  white-space: nowrap; /* không xuống dòng */
 }
 </style>

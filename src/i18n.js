@@ -1,4 +1,4 @@
-import { createI18n } from 'vue-i18n'
+import { createI18n } from "vue-i18n";
 
 const messages = {
   en: {
@@ -6,51 +6,86 @@ const messages = {
       title: "DSVN - Order Food On Train",
       subTitle: "Order on train SE1 - Car 1",
       buttonAdd: "Add",
+      buttonSoldOut: "Sold out",
       orderInfoTitle: "Order Information",
       orderInfoSubTitle: "Order on train",
+      quantityTitle: "Remaining",
       yourOrderTitle: "Your Order",
       orderUnit: "item",
       totalPrice: "Total",
       titleCartEmpty: "Cart is empty",
-      subTitleCartEmpty:"Add your favorite food to cart!",
+      subTitleCartEmpty: "Add your favorite food to cart!",
       titleForm: "Customer Information",
-      nameInputName: "Full Name",
+      nameInputName: "Full Name *",
       nameInputPhone: "Phone Number",
       placeholderInputName: "Enter full name",
       placeholderInputPhone: "Enter phone number",
       requiredNameTitle: "Please enter your full name",
-      requiredPhoneTitle: "Please enter your phone number",
-       formatPhoneTitle: "Invalid phone number"
-    }
+      formatPhoneTitle: "Invalid phone number",
+      nameInputBill: "Select invoice",
+      nameRadioNoReceipt: "No receipt",
+      nameRadioNoGetInvoice: "Get invoice",
+      nameInputTaxCode: "Tax code/Personal identification code *",
+      placeholderTaxCode: "Enter tax code",
+      nameInputBudgetRelationshipCode: "Budget relationship code",
+      placeholderBudgetRelationshipCode: "Enter the budget relationship code",
+      nameInputCompanyName: "Company name",
+      placeholderCompanyName: "Enter company name",
+      nameInputCompanyAddress: "Company address",
+      placeholderCompanyAddress: "Enter company address",
+      requiredTaxCode: "Please enter tax code",
+      formatTaxCodeTitle: "Invalid Tax Code",
+      orderSuccess: "Order Success",
+      contentOrderSuccess: "Please see information in the order section",
+      buttonOrderConfirmation: "Order Confirmation"
+    },
   },
   vi: {
     message: {
       title: "DSVN - Đặt Đồ Ăn Trên Tàu",
       subTitle: "Đặt đồ trên tàu SE1 - Toa 1",
       buttonAdd: "Thêm",
+      buttonSoldOut: "Hết hàng",
       orderInfoTitle: "Thông tin đơn hàng",
       orderInfoSubTitle: "Đặt đồ trên tàu",
-       yourOrderTitle: "Đơn hàng của bạn",
-       orderUnit: "món",
-       totalPrice: "Tổng cộng",
-       titleCartEmpty: "Giỏ hàng trống",
-       subTitleCartEmpty: "Thêm món ăn yêu thích vào giỏ hàng nhé!",
-       titleForm: "Thông tin khách hàng",
-       nameInputName: "Họ Tên",
-       nameInputPhone: "Số điện thoại",
-       placeholderInputName: "Nhập họ tên",
+      quantityTitle: "Còn lại",
+      yourOrderTitle: "Đơn hàng của bạn",
+      orderUnit: "món",
+      totalPrice: "Tổng cộng",
+      titleCartEmpty: "Giỏ hàng trống",
+      subTitleCartEmpty: "Thêm món ăn yêu thích vào giỏ hàng nhé!",
+      titleForm: "Thông tin khách hàng",
+      nameInputName: "Họ Tên *",
+      nameInputPhone: "Số điện thoại",
+      placeholderInputName: "Nhập họ tên",
       placeholderInputPhone: "Nhập số điện thoại",
       requiredNameTitle: "Vui lòng nhập tên",
-      requiredPhoneTitle: "Vui lòng nhập số điện thoại",
-       formatPhoneTitle: "Số điện thoại không hợp lệ"
-    }
-  }
-}
+      formatPhoneTitle: "Số điện thoại không hợp lệ",
+      nameInputBill: "Lựa chọn hóa đơn",
+      nameRadioNoReceipt: "Không lấy hóa đơn",
+      nameRadioNoGetInvoice: "Lấy hóa đơn",
+      nameInputTaxCode: "Mã số thuế/Mã định danh cá nhân *",
+      placeholderTaxCode: "Nhập mã số thuế",
+      nameInputBudgetRelationshipCode: "Mã quan hệ ngân sách",
+      placeholderBudgetRelationshipCode: "Nhập mã quan hệ ngân sách",
+      nameInputCompanyName: "Tên công ty",
+      placeholderCompanyName: "Nhập tên công ty",
+      nameInputCompanyAddress: "Địa chỉ công ty",
+      placeholderCompanyAddress: "Nhập địa chỉ công ty",
+      requiredTaxCode: "Vui lòng nhập mã số thuế",
+      formatTaxCodeTitle: "Mã số không hợp lệ",
+      orderSuccess: "Đặt hàng thành công",
+      contentOrderSuccess: "Vui lòng xem thông tin trong phần đặt hàng",
+      buttonOrderConfirmation: "Xác nhận đặt hàng"
+
+    },
+  },
+};
 
 const i18n = createI18n({
-  locale: 'vi',       // ngôn ngữ mặc định
-  fallbackLocale: 'en',
-  messages
-})
+  locale: "vi", // ngôn ngữ mặc định
+  fallbackLocale: "en",
+  messages,
+});
 
-export default i18n
+export default i18n;
