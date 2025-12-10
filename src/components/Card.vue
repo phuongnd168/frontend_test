@@ -5,7 +5,7 @@
   <div class="grid m-3">
     <div class="col-4" v-for="product in products" :key="product.id">
       <Card
-        class="shadow-3 hover-lift transition-all duration-300"
+        class="rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1.5 shadow-3"
         style="white-space: nowrap"
       >
         <template #subtitle>
@@ -15,12 +15,14 @@
                 @click="
                   showImage(product.Img, product.NameVi, product.NameEn, product.Price)
                 "
-                class="product-card"
+                class="w-[100px] h-[100px] object-cover rounded"
                 alt="food"
                 :src="product.Img"
               />
-              <div class="p-2 product-info">
-                <p class="text-1xl font-bold product-name">
+              <div class="p-2 p-2 min-w-0">
+                <p
+                  class="text-1xl font-bold inline-block max-w-[180px] whitespace-nowrap"
+                >
                   {{ props.language === "vi" ? product.NameVi : product.NameEn }}
                 </p>
 
@@ -40,23 +42,25 @@
             </div>
             <div>
               <Button
-                @click="removeCart(product)"
-                v-if="check(product)"
+                @click="carts.remove(product)"
+                v-if="carts.isAdded(product.Id)"
                 icon="pi pi-minus m-2"
                 severity="danger"
                 variant="outlined"
                 rounded
               />
 
-              <span class="m-2" v-if="check(product)">{{ count(product) }}</span>
+              <span class="m-2" v-if="carts.isAdded(product.Id)">{{
+                carts.getCount(product.Id)
+              }}</span>
 
               <Button
-                @click="addCart(product)"
-                v-if="check(product)"
+                @click="carts.add(product)"
+                v-if="carts.isAdded(product.Id)"
                 icon="pi pi-plus m-2"
                 severity="primary"
                 variant="outlined"
-                :disabled="checkCount(product)"
+                :disabled="carts.isMax(product)"
                 rounded
               />
 
@@ -70,11 +74,11 @@
                 rounded
               />
               <Button
-                v-if="product.Quantity && !check(product)"
+                v-if="product.Quantity && !carts.isAdded(product.Id)"
                 icon="pi pi-plus"
                 :label="$t('message.buttonAdd')"
                 class="text-sm h-8"
-                @click="addCart(product)"
+                @click="carts.add(product)"
                 rounded
               />
             </div></div
@@ -87,94 +91,28 @@
 <script setup>
 import Card from "primevue/card";
 import Button from "primevue/button";
-import { onMounted, reactive, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { defineEmits } from "vue";
-
 import Dialog from "primevue/dialog";
-const emit = defineEmits(["data"]);
+import { useCartStore } from "@/store/cartStore";
+
+const emit = defineEmits(["quantity"]);
 
 const props = defineProps({
   products: Array,
   language: String,
 });
 
-const data = sessionStorage.getItem("carts");
-const carts = reactive(JSON.parse(data) ?? []);
-
-const checkCount = (product) => {
-  return count(product) >= product.Quantity;
-};
-const addCart = (product) => {
-  if (carts?.length) {
-    const index = carts.findIndex((cart) => cart.id === product.Id);
-
-    if (index >= 0) {
-      carts[index].count += 1;
-      return;
-    }
-    carts.push({
-      id: product.Id,
-      nameVi: product.NameVi,
-      nameEn: product.NameEn,
-      img: product.Img,
-      price: product.Price,
-      quantity: product.Quantity,
-      count: 1,
-    });
-    return;
-  }
-
-  carts.push({
-    id: product.Id,
-    nameVi: product.NameVi,
-    nameEn: product.NameEn,
-    img: product.Img,
-    price: product.Price,
-    quantity: product.Quantity,
-    count: 1,
-  });
-};
-const removeCart = (product) => {
-  if (carts?.length) {
-    const index = carts?.findIndex((cart) => cart.id === product.Id);
-    if (index >= 0) {
-      if (carts[index].count === 1) {
-        carts.splice(index, 1);
-        return;
-      }
-      carts[index].count -= 1;
-
-      return;
-    }
-  }
-};
-const check = (product) => {
-  return carts?.some((cart) => cart.id === product.Id);
-};
+const carts = useCartStore();
 
 watch(
   carts,
   () => {
-    sessionStorage.setItem("carts", JSON.stringify(carts));
-
-    let quantity = 0;
-
-    carts.forEach((cart) => {
-      quantity += cart.count;
-    });
-    emit("data", quantity);
+    const quantity = carts.totalQuantity;
+    emit("quantity", quantity);
   },
   { deep: true }
 );
-const count = (product) => {
-  let count = null;
-  carts?.find((cart) => {
-    if (cart.id === product.Id) {
-      count = cart.count;
-    }
-  });
-  return count;
-};
 
 const nameDialog = ref("");
 const visible = ref(false);
@@ -190,32 +128,3 @@ const showImage = (productImg, productNameVi, productNameEn, productPrice) => {
     "đ";
 };
 </script>
-<style>
-.product-card {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-.hover-lift {
-  transition: all 0.3s ease;
-  border-radius: 12px;
-  overflow: hidden;
-}
-.p-dialog .p-dialog-mask {
-  background-color: white !important;
-}
-.hover-lift:hover {
-  transform: translateY(-5px);
-}
-.product-info {
-  min-width: 0; /* cho phép co lại thay vì đẩy buttons */
-}
-
-.product-name {
-  display: inline-block;
-  max-width: 180px; /* độ rộng giới hạn */
-  transform-origin: left; /* thu nhỏ từ trái sang */
-  white-space: nowrap; /* không xuống dòng */
-}
-</style>

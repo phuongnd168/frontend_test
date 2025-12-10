@@ -35,6 +35,8 @@ const messages = {
       placeholderCompanyAddress: "Enter company address",
       requiredTaxCode: "Please enter tax code",
       formatTaxCodeTitle: "Invalid Tax Code",
+      buttonNextOrderInfo: "Continue",
+      buttonPreviewOrderInfo: "Return",
       orderSuccess: "Order Success",
       contentOrderSuccess: "Please see information in the order section",
       buttonOrderConfirmation: "Order Confirmation"
@@ -74,6 +76,8 @@ const messages = {
       placeholderCompanyAddress: "Nhập địa chỉ công ty",
       requiredTaxCode: "Vui lòng nhập mã số thuế",
       formatTaxCodeTitle: "Mã số không hợp lệ",
+      buttonNextOrderInfo: "Tiếp tục",
+      buttonPreviewOrderInfo: "Quay lại",
       orderSuccess: "Đặt hàng thành công",
       contentOrderSuccess: "Vui lòng xem thông tin trong phần đặt hàng",
       buttonOrderConfirmation: "Xác nhận đặt hàng"

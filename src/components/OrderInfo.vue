@@ -7,104 +7,48 @@ import * as yup from "yup";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const { locale } = useI18n();
-
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import RadioButton from "primevue/radiobutton";
 import Button from "primevue/button";
-import axios from "axios";
 import router from "@/router";
+import { useLanguageStore } from "../store/languageStore";
+import { useOrderStore } from "@/store/orderStore";
+
+const orders = useOrderStore();
+
+const languageStore = useLanguageStore();
 const loading = ref(false);
 const getBill = ref("noReceipt");
+
+const setLocale = () => {
+  languageStore.toggle();
+  locale.value = languageStore.language;
+};
+
 const showBill = () => {
   if (getBill.value === "noReceipt") {
     return false;
   }
   return true;
 };
-onMounted(() => {
+
+onMounted(async () => {
+  orders.sync();
   try {
-    if (!localStorage.getItem("language")) {
+    if (!languageStore.language) {
       localStorage.setItem("language", locale.value);
     }
     if (!sessionStorage.getItem("carts")) {
       sessionStorage.setItem("carts", JSON.stringify([]));
     }
 
-    locale.value = localStorage.getItem("language");
+    locale.value = languageStore.language;
   } catch (error) {
     console.error(error);
   }
 });
-const data = sessionStorage.getItem("carts");
-
-const carts = reactive(JSON.parse(data) ?? []);
-const language = ref(localStorage.getItem("language"));
-const check = computed(() => {
-  return carts?.length;
-});
-const setLocale = () => {
-  if (language.value === "vi") {
-    locale.value = "en";
-    language.value = "en";
-    localStorage.setItem("language", "en");
-  } else {
-    locale.value = "vi";
-    language.value = "vi";
-    localStorage.setItem("language", "vi");
-  }
-};
-const addCart = (product) => {
-  const index = carts.findIndex((cart) => cart.id === product.id);
-
-  if (index >= 0) {
-    carts[index].count += 1;
-  }
-};
-
-const removeCart = (product) => {
-  const index = carts.findIndex((cart) => cart.id === product.id);
-  if (index >= 0) {
-    carts[index].count -= 1;
-  }
-};
-const deleteCart = (product) => {
-  const index = carts.findIndex((cart) => cart.id === product.id);
-  if (index >= 0) {
-    carts.splice(index, 1);
-  }
-};
-const checkDisable = (product) => {
-  const index = carts.findIndex((cart) => cart.id === product.id);
-  if (index >= 0 && carts[index].count === 1) {
-    return true;
-  }
-  return false;
-};
-watch(
-  carts,
-  () => {
-    sessionStorage.setItem("carts", JSON.stringify(carts));
-  },
-  { deep: true }
-);
-const price = computed(() => {
-  let value = 0;
-  carts?.forEach((cart) => {
-    value += cart.price * cart.count;
-  });
-  return value;
-});
-const count = (product) => {
-  let count = null;
-  carts.find((cart) => {
-    if (cart.id === product.id) {
-      count = cart.count;
-    }
-  });
-  return count;
-};
-const addString = () => (carts?.length > 1 && language.value === "en" ? "s" : "");
+const price = computed(() => orders.totalPrice);
 
 const { defineField, errors, handleSubmit } = useForm({
   validationSchema: yup.object({
@@ -164,72 +108,46 @@ const showConfirm = () => {
   nameDialog.value =
     t("message.yourOrderTitle") +
     " (" +
-    (check.value ?? 0) +
+    (orders.countInCart ?? 0) +
     " " +
     t("message.orderUnit") +
-    addString() +
+    orders.addString(locale.value) +
     ")";
 };
-const checkCount = (product) => {
-  return count(product) >= product.quantity;
-};
+
 async function OrderComplete() {
   loading.value = true;
-  try {
-    const dataPatch = [];
+  const dataPatch = [];
 
-    carts.forEach((cart) => {
-      dataPatch.push({
-        id: cart.id,
-        count: cart.count,
-      });
+  orders.carts.forEach((cart) => {
+    dataPatch.push({
+      id: cart.id,
+      count: cart.count,
     });
-    const dataPost = [];
-    carts.forEach((cart) => {
-      dataPost.push({
-        id: cart.id,
-        count: cart.count,
-        price: cart.price,
-        totalPrice: cart.price * cart.count,
-        nameEn: cart.nameEn,
-        nameVi: cart.nameVi,
-        img: cart.img,
-      });
+  });
+
+  const dataPost = [];
+  orders.carts.forEach((cart) => {
+    dataPost.push({
+      id: cart.id,
+      count: cart.count,
+      price: cart.price,
+      totalPrice: cart.price * cart.count,
+      nameEn: cart.nameEn,
+      nameVi: cart.nameVi,
+      img: cart.img,
     });
+  });
 
-    const value = dataPost.map((x) => JSON.stringify(x)).join(",");
-
-    const responsePost = await axios.post(`http://localhost:5097/api/orderProduct`, {
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-
-      userId: 8,
-      products: value,
-    });
-
-    const responsePatch = await axios.patch(
-      `http://localhost:5097/api/products`,
-
-      {
-        dataPatch,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (responsePost.data.StatusCode === 201 && responsePatch.data.StatusCode === 200) {
-      sessionStorage.removeItem("carts");
-      sessionStorage.setItem("order", true);
-      router.push({ name: "Home" });
-    }
-  } catch (error) {
-    console.error("Failed to update product:", error);
-  } finally {
+  const value = dataPost.map((x) => JSON.stringify(x)).join(",");
+  const addOrder = await orders.addOrder(8, value);
+  const updateQuantity = await orders.updateQuantity(dataPatch);
+  if (addOrder && updateQuantity) {
     loading.value = false;
+    orders.clear();
+    sessionStorage.setItem("order", true);
+
+    router.push({ name: "Home" });
   }
 }
 function goToHome() {
@@ -255,7 +173,7 @@ function goToHome() {
       icon="pi pi-globe"
       severity="info"
       @click="setLocale()"
-      :label="language === 'vi' ? 'EN' : 'VI'"
+      :label="locale === 'vi' ? 'EN' : 'VI'"
       rounded
     />
   </div>
@@ -264,10 +182,10 @@ function goToHome() {
       <template #title>{{
         $t("message.yourOrderTitle") +
         " (" +
-        (check ?? 0) +
+        (orders.countInCart ?? 0) +
         " " +
         $t("message.orderUnit") +
-        addString() +
+        orders.addString(locale) +
         ")"
       }}</template>
       <template #content>
@@ -291,7 +209,7 @@ function goToHome() {
             <!-- Danh sách sản phẩm -->
             <div class="space-y-4">
               <div
-                v-for="product in carts"
+                v-for="product in orders.carts"
                 :key="product.id"
                 class="flex gap-3 bg-gray-50 p-3 rounded-xl shadow-sm border border-gray-200"
               >
@@ -303,7 +221,7 @@ function goToHome() {
 
                 <div class="flex-1">
                   <div class="font-semibold text-gray-800">
-                    {{ language === "vi" ? product.nameVi : product.nameEn }}
+                    {{ locale === "vi" ? product.nameVi : product.nameEn }}
                     {{
                       "(" +
                       product.price.toLocaleString("vi-VN") +
@@ -392,13 +310,17 @@ function goToHome() {
           </template>
         </Dialog>
 
-        <div v-for="product in carts" class="flex justify-content-between">
+        <div v-for="product in orders.carts" class="flex justify-content-between">
           <div class="flex justify-content-start">
-            <img alt="food" :src="product.img" class="product-card p-2" />
+            <img
+              alt="food"
+              :src="product.img"
+              class="w-[100px] h-[100px] object-cover rounded p-2"
+            />
             <div class="flex flex-column-reverse gap-3">
               <p>{{ (product.price * product.count).toLocaleString("vi-VN") }}đ</p>
               <p>
-                {{ language === "vi" ? product.nameVi : product.nameEn }}
+                {{ locale === "vi" ? product.nameVi : product.nameEn }}
                 {{ "x" + product.count }}
               </p>
             </div>
@@ -407,25 +329,25 @@ function goToHome() {
           <div class="flex align-items-center gap-2">
             <Button
               rounded
-              :disabled="checkDisable(product)"
-              @click="removeCart(product)"
+              :disabled="orders.checkDisable(product)"
+              @click="orders.removeFromCart(product)"
               icon="pi pi-minus m-2"
               severity="danger"
               variant="outlined"
             />
 
-            <span class="m-2">{{ count(product) }}</span>
+            <span class="m-2">{{ orders.countInProduct(product.id) }}</span>
 
             <Button
-              @click="addCart(product)"
+              @click="orders.addToCart(product)"
               icon="pi pi-plus m-2"
               severity="primary"
               variant="outlined"
-              :disabled="checkCount(product)"
+              :disabled="orders.checkQuantity(product)"
               rounded
             />
             <Button
-              @click="deleteCart(product)"
+              @click="orders.deleteItem(product)"
               icon="pi pi-trash m-2"
               severity="danger"
               variant="outlined"
@@ -435,7 +357,7 @@ function goToHome() {
         </div>
       </template>
       <template #footer>
-        <div v-if="!check" class="flex flex-column align-items-center">
+        <div v-if="!orders.countInCart" class="flex flex-column align-items-center">
           <span style="font-size: 2rem" class="pi pi-shopping-cart"></span>
           <p>{{ $t("message.titleCartEmpty") }}</p>
           <p>{{ $t("message.subTitleCartEmpty") }}</p>
@@ -448,7 +370,7 @@ function goToHome() {
     </Card>
   </div>
 
-  <div v-if="check" class="flex justify-content-center">
+  <div v-if="orders.countInCart" class="flex justify-content-center">
     <Card class="m-2 w-7">
       <template #title>{{ $t("message.titleForm") }}</template>
       <template #content>
@@ -462,7 +384,7 @@ function goToHome() {
               v-model="name"
               v-bind="nameAttrs"
             />
-            <span class="p-error"> {{ errors.name }}</span>
+            <span class="text-red-500 text-sm"> {{ errors.name }}</span>
           </div>
 
           <div class="field mb-3">
@@ -474,7 +396,7 @@ function goToHome() {
               v-bind="phoneAttrs"
               :placeholder="$t('message.placeholderInputPhone')"
             />
-            <span class="p-error"> {{ errors.phone }}</span>
+            <span class="text-red-500 text-sm"> {{ errors.phone }}</span>
           </div>
 
           <!-- Ghi chú -->
@@ -499,7 +421,7 @@ function goToHome() {
                 v-bind="taxCodeAttrs"
                 :placeholder="$t('message.placeholderTaxCode')"
               />
-              <span class="p-error"> {{ errors.taxCode }}</span>
+              <span class="text-red-500 text-sm"> {{ errors.taxCode }}</span>
             </div>
 
             <div class="field mb-3">
@@ -543,7 +465,7 @@ function goToHome() {
             <Button
               @click="goToHome"
               class="col-5"
-              label="Quay lại"
+              :label="$t('message.buttonPreviewOrderInfo')"
               severity="contrast"
               rounded
             />
@@ -551,7 +473,7 @@ function goToHome() {
               rounded
               severity="info"
               class="col-5"
-              label="Tiếp tục"
+              :label="$t('message.buttonNextOrderInfo')"
               type="submit"
             />
           </div>
@@ -560,15 +482,3 @@ function goToHome() {
     </Card>
   </div>
 </template>
-<style>
-.product-card {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-.p-error {
-  color: red;
-  font-size: 0.875rem;
-}
-</style>

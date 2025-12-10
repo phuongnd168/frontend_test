@@ -15,7 +15,7 @@
             class="w-full mt-1"
             placeholder="Nhập tên sản phẩm tiếng Việt"
           />
-          <span class="p-error"> {{ errors.nameVi }}</span>
+          <span class="text-red-500 text-sm"> {{ errors.nameVi }}</span>
         </div>
 
         <!-- Tên tiếng Anh -->
@@ -27,7 +27,7 @@
             class="w-full mt-1"
             placeholder="Nhập tên sản phẩm tiếng Anh"
           />
-          <span class="p-error"> {{ errors.nameEn }}</span>
+          <span class="text-red-500 text-sm"> {{ errors.nameEn }}</span>
         </div>
 
         <!-- Giá -->
@@ -43,7 +43,7 @@
             locale="vi-VN"
             placeholder="Nhập giá sản phẩm"
           />
-          <span class="p-error"> {{ errors.price }}</span>
+          <span class="text-red-500 text-sm"> {{ errors.price }}</span>
         </div>
 
         <!-- Số lượng -->
@@ -56,7 +56,7 @@
             class="w-full mt-1"
             inputClass="w-full"
           />
-          <span class="p-error"> {{ errors.quantity }}</span>
+          <span class="text-red-500 text-sm"> {{ errors.quantity }}</span>
         </div>
 
         <!-- Danh mục -->
@@ -75,7 +75,7 @@
               class="w-full truncate"
             />
           </div>
-          <span class="p-error"> {{ errors.categoriesSelected }}</span>
+          <span class="text-red-500 text-sm"> {{ errors.categoriesSelected }}</span>
         </div>
 
         <!-- Ảnh sản phẩm -->
@@ -93,7 +93,7 @@
           <div v-if="previewImage" class="mt-3">
             <img :src="previewImage" class="w-40 rounded shadow" />
           </div>
-          <span class="p-error">{{ errors.img }}</span>
+          <span class="text-red-500 text-sm">{{ errors.img }}</span>
         </div>
 
         <!-- Hành động -->
@@ -163,14 +163,11 @@ const [categoriesSelected, categoriesSelectedAttrs] = defineField("categoriesSel
 const previewImage = ref(null);
 
 onMounted(async () => {
-  const product = await axios.get(`http://localhost:5097/api/products/${id}`, {
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-  });
+  const product = await axios.get(`http://localhost:5097/api/products/${id}`);
+
   if (product.data.StatusCode === 200) {
     const { Data } = await product.data;
+
     if (Data) {
       check.value = true;
       nameVi.value = Data.NameVi;
@@ -182,12 +179,7 @@ onMounted(async () => {
     }
   }
 
-  const categoriesData = await axios.get(`http://localhost:5097/api/categories`, {
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-  });
+  const categoriesData = await axios.get(`http://localhost:5097/api/categories`);
   if (categoriesData.data.StatusCode === 200) {
     const categoriesValue = await categoriesData.data;
     categories.value = categoriesValue.Data;
