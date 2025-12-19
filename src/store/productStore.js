@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5097/api";
+const API_BASE_URL = "https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api";
 
 export const useProductStore = defineStore("products", {
   state: () => ({
@@ -13,7 +13,11 @@ export const useProductStore = defineStore("products", {
   actions: {
     async getProduct() {
       try {
-        const response = await axios.get(`${API_BASE_URL}/products/all`)
+        const response = await axios.get(`${API_BASE_URL}/products/all`,{
+  headers: {
+    Authorization: "Bearer " + localStorage.getItem("token")
+  }
+})
        
         if (response.data.StatusCode === 200) {
             this.products = response.data.Data;
@@ -27,7 +31,11 @@ export const useProductStore = defineStore("products", {
     },
     async getCategory() {
       try {
-        const response = await axios.get(`${API_BASE_URL}/categories`)
+        const response = await axios.get(`${API_BASE_URL}/categories`, {
+  headers: {
+    Authorization: "Bearer " + localStorage.getItem("token")
+  }
+})
         if (response.data.StatusCode === 200) {
             this.categories = response.data.Data;
             return true
@@ -43,7 +51,11 @@ export const useProductStore = defineStore("products", {
       return this.products.filter(product => product.CategoryId.some(x => x === category));
     },
     async deleteProduct(id) {
-        const result = await axios.delete(`${API_BASE_URL}/products/${id}`);
+        const result = await axios.delete(`${API_BASE_URL}/products/${id}`, {
+  headers: {
+    Authorization: "Bearer " + localStorage.getItem("token")
+  }
+});
         if (result.data.StatusCode === 200) {
             return true
         }
@@ -55,7 +67,11 @@ export const useProductStore = defineStore("products", {
         if(sortOrder===-1){
           sortDirection= "desc"
         }
-         const response = await axios.get(`${API_BASE_URL}/products/?pageSize=${pageSize}&page=${page}&keyword=${keyword}&sortField=${sortField}&sortDirection=${sortDirection}`);
+         const response = await axios.get(`${API_BASE_URL}/products/?pageSize=${pageSize}&page=${page}&keyword=${keyword}&sortField=${sortField}&sortDirection=${sortDirection}`,{
+  headers: {
+    Authorization: "Bearer " + localStorage.getItem("token")
+  }
+});
         if (response.data.StatusCode === 200) {
           const {products, totalCount} = response.data.Data
           this.products = products;
@@ -65,7 +81,11 @@ export const useProductStore = defineStore("products", {
         return false
       }
       if(keyword){
-        const response = await axios.get(`${API_BASE_URL}/products/?pageSize=${pageSize}&page=${page}&keyword=${keyword}`);
+        const response = await axios.get(`${API_BASE_URL}/products/?pageSize=${pageSize}&page=${page}&keyword=${keyword}`,{
+  headers: {
+    Authorization: "Bearer " + localStorage.getItem("token")
+  }
+});
         if (response.data.StatusCode === 200) {
           const {products, totalCount} = response.data.Data
           this.products = products;
@@ -74,7 +94,11 @@ export const useProductStore = defineStore("products", {
         } 
         return false
       }
-        const response = await axios.get(`${API_BASE_URL}/products/?pageSize=${pageSize}&page=${page}`);
+        const response = await axios.get(`${API_BASE_URL}/products/?pageSize=${pageSize}&page=${page}`, {
+  headers: {
+    Authorization: "Bearer " + localStorage.getItem("token")
+  }
+});
         if (response.data.StatusCode === 200) {
           const {products, totalCount} = response.data.Data
           this.products = products

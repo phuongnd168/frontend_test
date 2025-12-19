@@ -12,11 +12,13 @@ import { useProductStore } from "@/store/productStore";
 import { useRouter } from "vue-router";
 import Card from "./Card.vue";
 import { useCartStore } from "@/store/cartStore";
+import { useAuthStore } from "@/store/authStore";
 
 const { locale, t } = useI18n();
 const toast = useToast();
 const languageStore = useLanguageStore();
 const productStore = useProductStore();
+const authStore = useAuthStore();
 const carts = useCartStore();
 const router = useRouter();
 
@@ -29,7 +31,10 @@ const setLocale = () => {
   languageStore.toggle();
   locale.value = languageStore.language;
 };
-
+const logout = () => {
+  authStore.logout();
+  router.push("/login");
+};
 onMounted(async () => {
   carts.sync();
 
@@ -79,7 +84,7 @@ function goToOrderInfo() {
   </div>
   <div class="flex justify-content-between">
     <Tabs v-model:value="category">
-      <TabList>
+      <TabList class="max-w-[50vw]">
         <Tab key="All" value="All">{{ locale === "vi" ? "Tất cả" : "All" }}</Tab>
         <Tab
           v-for="category in productStore.categories"
@@ -117,6 +122,13 @@ function goToOrderInfo() {
           {{ count }}
         </span>
       </div>
+      <Button
+        class="m-2"
+        rounded
+        severity="warn"
+        icon="pi pi-sign-out"
+        @click="logout()"
+      />
     </div>
   </div>
   <div>

@@ -8,14 +8,21 @@ import ManagerProducts from '@/components/ManagerProducts.vue'
 import AddProduct from '../components/AddProduct.vue'
 import UpdateProduct from '@/components/UpdateProduct.vue'
 import ManagerCategories from '@/components/ManagerCategories.vue'
+import Login from '@/components/Login.vue'
+import Register from '@/components/Register.vue'
+import ForgotPassword from '@/components/ForgotPassword.vue'
+
 
 const routes = [
-  { path: '/', name: 'Home', component: Header },
-  { path: '/order-info', name: 'OrderInfo', component: OrderInfo },
-  { path: '/manager-products', name: 'ManagerProducts', component: ManagerProducts },
-  { path: '/manager-products/add', name: 'AddProduct', component: AddProduct },
-  { path: "/manager-products/update/:id", name: 'UpdateProduct', component: UpdateProduct },
-  { path: "/manager-categories", name: 'ManagerCategories', component: ManagerCategories },
+  { path: '/', name: 'Home', component: Header ,   meta: { requiresAuth: true } },
+  { path: '/order-info', name: 'OrderInfo', component: OrderInfo,   meta: { requiresAuth: true }  },
+  { path: '/manager-products', name: 'ManagerProducts', component: ManagerProducts, meta: { requiresAuth: true } },
+  { path: '/manager-products/add', name: 'AddProduct', component: AddProduct, meta: { requiresAuth: true } },
+  { path: "/manager-products/update/:id", name: 'UpdateProduct', component: UpdateProduct, meta: { requiresAuth: true } },
+  { path: "/manager-categories", name: 'ManagerCategories', component: ManagerCategories, meta: { requiresAuth: true } },
+  { path: "/login", name: 'Login', component: Login },
+  { path: "/register", name: 'Register', component: Register },
+   { path: "/forgot-password", name: 'ForgotPassword', component: ForgotPassword },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }
 ]
 
@@ -23,5 +30,15 @@ const router = createRouter({
   history: createWebHistory(),
   routes
 })
-
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem("token");
+  const tokenExpireAt = localStorage.getItem("tokenExpireAt");
+  if (to.meta.requiresAuth && !token) {
+    return next("/login");  
+  }
+  if(token && Date.now()>tokenExpireAt){
+    return next("/login");  
+  }
+  next();
+});
 export default router

@@ -7,6 +7,7 @@
       @sort="onSort"
       :value="productStore.products"
       tableStyle="min-width: 50rem"
+      :loading="loading"
     >
       <template #header>
         <div class="flex justify-content-between">
@@ -68,13 +69,12 @@
       <Column header="Thao tác">
         <template #body="{ data }">
           <div class="flex gap-2">
-            <!-- Nút sửa -->
             <Button
               icon="pi pi-pencil"
               @click="updateProduct(data.Id)"
               class="p-button-sm p-button-rounded p-button-warn"
             />
-            <!-- Nút xóa -->
+
             <Button
               icon="pi pi-trash"
               @click="confirmDelete(data.Id)"
@@ -176,8 +176,7 @@ onMounted(async () => {
   sessionStorage.removeItem("addProduct");
   try {
     loading.value = true;
-    await productStore.getProduct();
-    productStore.products = [];
+
     await productStore.getCategory();
     await productStore.getProductToFilters(2, 1, "");
     length.value = productStore.productLength;

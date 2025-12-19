@@ -163,7 +163,14 @@ const [categoriesSelected, categoriesSelectedAttrs] = defineField("categoriesSel
 const previewImage = ref(null);
 
 onMounted(async () => {
-  const product = await axios.get(`http://localhost:5097/api/products/${id}`);
+  const product = await axios.get(
+    `https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api/products/${id}`,
+    {
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("token"),
+      },
+    }
+  );
 
   if (product.data.StatusCode === 200) {
     const { Data } = await product.data;
@@ -179,7 +186,14 @@ onMounted(async () => {
     }
   }
 
-  const categoriesData = await axios.get(`http://localhost:5097/api/categories`);
+  const categoriesData = await axios.get(
+    `https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api/categories`,
+    {
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("token"),
+      },
+    }
+  );
   if (categoriesData.data.StatusCode === 200) {
     const categoriesValue = await categoriesData.data;
     categories.value = categoriesValue.Data;
@@ -215,19 +229,24 @@ const onSubmit = () => {
             }
           );
           const { secure_url } = await response.json();
-          const result = await axios.put(`http://localhost:5097/api/products/${id}`, {
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
+          const result = await axios.put(
+            `https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api/products/${id}`,
+            {
+              nameVi: values.nameVi,
+              nameEn: values.nameEn,
+              price: values.price,
+              quantity: values.quantity,
+              listCategory: values.categoriesSelected,
+              img: secure_url,
             },
-
-            nameVi: values.nameVi,
-            nameEn: values.nameEn,
-            price: values.price,
-            quantity: values.quantity,
-            listCategory: values.categoriesSelected,
-            img: secure_url,
-          });
+            {
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("token"),
+              },
+            }
+          );
           if (result.data.StatusCode === 200) {
             toast.add({
               severity: "success",
@@ -237,19 +256,24 @@ const onSubmit = () => {
             });
           }
         } else {
-          const result = await axios.put(`http://localhost:5097/api/products/${id}`, {
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
+          const result = await axios.put(
+            `https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api/products/${id}`,
+            {
+              nameVi: values.nameVi,
+              nameEn: values.nameEn,
+              price: values.price,
+              quantity: values.quantity,
+              listCategory: values.categoriesSelected,
+              img: previewImage.value,
             },
-
-            nameVi: values.nameVi,
-            nameEn: values.nameEn,
-            price: values.price,
-            quantity: values.quantity,
-            listCategory: values.categoriesSelected,
-            img: previewImage.value,
-          });
+            {
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("token"),
+              },
+            }
+          );
           if (result.data.StatusCode === 200) {
             toast.add({
               severity: "success",

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-const API_BASE_URL = "http://localhost:5097/api";
+const API_BASE_URL = "https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api";
 import axios from "axios";
 export const useOrderStore = defineStore("order", {
   state: () => ({
@@ -55,13 +55,14 @@ export const useOrderStore = defineStore("order", {
     async addOrder(userId, products) {
       try {
         const response = await axios.post(`${API_BASE_URL}/orderProduct`,{
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-        },
+     
             userId,
             products
-        })
+        },{   headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+             Authorization: "Bearer " + localStorage.getItem("token")
+        },})
     
        
         if (response.data.StatusCode === 201) {           
@@ -78,6 +79,7 @@ export const useOrderStore = defineStore("order", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+           Authorization: "Bearer " + localStorage.getItem("token")
         },
         })
         if (response.data.StatusCode === 200) {
