@@ -18,13 +18,14 @@ const orderId = ref("ORDER123");
 
 const pay = async () => {
   try {
+    // gọi backend tạo URL VNPay
     const res = await fetch(
       `https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api/payment/vnpay/create?amount=${amount.value}&orderId=${orderId.value}`,
       { method: "POST" }
     );
     const data = await res.json();
     if (data.paymentUrl) {
-      // Redirect sang VNPay sandbox
+      // Chỉ redirect, không load JS VNPay
       window.location.href = data.paymentUrl;
     } else {
       alert("VNPay error: " + JSON.stringify(data));
@@ -35,13 +36,3 @@ const pay = async () => {
   }
 };
 </script>
-
-<style scoped>
-input {
-  margin: 5px;
-}
-button {
-  margin-top: 10px;
-  padding: 8px 16px;
-}
-</style>
