@@ -61,6 +61,7 @@ export const useOrderStore = defineStore("order", {
         },{   headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "69420",
              Authorization: "Bearer " + localStorage.getItem("token")
         },})
     
@@ -79,6 +80,7 @@ export const useOrderStore = defineStore("order", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
            Authorization: "Bearer " + localStorage.getItem("token")
         },
         })

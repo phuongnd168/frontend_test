@@ -15,6 +15,7 @@ export const useProductStore = defineStore("products", {
       try {
         const response = await axios.get(`${API_BASE_URL}/products/all`,{
   headers: {
+    "ngrok-skip-browser-warning": "69420",
     Authorization: "Bearer " + localStorage.getItem("token")
   }
 })
@@ -33,6 +34,7 @@ export const useProductStore = defineStore("products", {
       try {
         const response = await axios.get(`${API_BASE_URL}/categories`, {
   headers: {
+    "ngrok-skip-browser-warning": "69420",
     Authorization: "Bearer " + localStorage.getItem("token")
   }
 })
@@ -53,6 +55,7 @@ export const useProductStore = defineStore("products", {
     async deleteProduct(id) {
         const result = await axios.delete(`${API_BASE_URL}/products/${id}`, {
   headers: {
+    "ngrok-skip-browser-warning": "69420",
     Authorization: "Bearer " + localStorage.getItem("token")
   }
 });
@@ -69,6 +72,7 @@ export const useProductStore = defineStore("products", {
         }
          const response = await axios.get(`${API_BASE_URL}/products/?pageSize=${pageSize}&page=${page}&keyword=${keyword}&sortField=${sortField}&sortDirection=${sortDirection}`,{
   headers: {
+    "ngrok-skip-browser-warning": "69420",
     Authorization: "Bearer " + localStorage.getItem("token")
   }
 });
@@ -83,6 +87,7 @@ export const useProductStore = defineStore("products", {
       if(keyword){
         const response = await axios.get(`${API_BASE_URL}/products/?pageSize=${pageSize}&page=${page}&keyword=${keyword}`,{
   headers: {
+    "ngrok-skip-browser-warning": "69420",
     Authorization: "Bearer " + localStorage.getItem("token")
   }
 });
@@ -96,6 +101,7 @@ export const useProductStore = defineStore("products", {
       }
         const response = await axios.get(`${API_BASE_URL}/products/?pageSize=${pageSize}&page=${page}`, {
   headers: {
+    "ngrok-skip-browser-warning": "69420",
     Authorization: "Bearer " + localStorage.getItem("token")
   }
 });

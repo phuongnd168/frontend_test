@@ -16,6 +16,7 @@ export const useCategoryStore = defineStore("category", {
       },{headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
           Authorization: "Bearer " + localStorage.getItem("token")
         }});
       if (response.data.StatusCode === 201) {
@@ -26,6 +27,7 @@ export const useCategoryStore = defineStore("category", {
     async deleteCategory(id) {
         const result = await axios.delete(`${API_BASE_URL}/categories/${id}`,{
   headers: {
+    "ngrok-skip-browser-warning": "69420",
     Authorization: "Bearer " + localStorage.getItem("token")
   }
 });
@@ -37,6 +39,7 @@ export const useCategoryStore = defineStore("category", {
     async getCategory(id) {
       const response = await axios.get(`${API_BASE_URL}/categories/${id}`,{
   headers: {
+    "ngrok-skip-browser-warning": "69420",
     Authorization: "Bearer " + localStorage.getItem("token")
   }
 });
@@ -57,6 +60,7 @@ export const useCategoryStore = defineStore("category", {
       }, {    headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
            Authorization: "Bearer " + localStorage.getItem("token")
         },});
       if (response.data.StatusCode === 200) {

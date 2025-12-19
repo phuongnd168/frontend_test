@@ -167,6 +167,7 @@ onMounted(async () => {
     `https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api/products/${id}`,
     {
       headers: {
+        "ngrok-skip-browser-warning": "69420",
         Authorization: "Bearer " + localStorage.getItem("token"),
       },
     }
@@ -190,6 +191,7 @@ onMounted(async () => {
     `https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api/categories`,
     {
       headers: {
+        "ngrok-skip-browser-warning": "69420",
         Authorization: "Bearer " + localStorage.getItem("token"),
       },
     }
@@ -243,6 +245,7 @@ const onSubmit = () => {
               headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
+                "ngrok-skip-browser-warning": "69420",
                 Authorization: "Bearer " + localStorage.getItem("token"),
               },
             }
@@ -270,6 +273,7 @@ const onSubmit = () => {
               headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
+                "ngrok-skip-browser-warning": "69420",
                 Authorization: "Bearer " + localStorage.getItem("token"),
               },
             }

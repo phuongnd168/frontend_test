@@ -176,6 +176,7 @@ const onSubmit = handleEmailSubmit(async (values) => {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
         },
         email,
       }
@@ -228,6 +229,7 @@ const sendOtp = handleOtpSubmit(async (values) => {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
         },
         email,
         otp,
@@ -286,6 +288,7 @@ const changePassword = handlePasswordSubmit(async (values) => {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
         },
         password,
         confirmPassword,
