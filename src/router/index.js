@@ -11,6 +11,7 @@ import ManagerCategories from '@/components/ManagerCategories.vue'
 import Login from '@/components/Login.vue'
 import Register from '@/components/Register.vue'
 import ForgotPassword from '@/components/ForgotPassword.vue'
+import VNPay from '@/components/VNPay.vue'
 
 
 const routes = [
@@ -23,6 +24,7 @@ const routes = [
   { path: "/login", name: 'Login', component: Login },
   { path: "/register", name: 'Register', component: Register },
    { path: "/forgot-password", name: 'ForgotPassword', component: ForgotPassword },
+      { path: "/vn-pay", name: 'VNPay', component: VNPay },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound }
 ]
 
