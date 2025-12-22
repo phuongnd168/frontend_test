@@ -6,12 +6,12 @@
 
     <label>Order ID:</label>
     <InputText type="text" v-model="orderId" />
-
-    <button @click="pay">Pay with VNPay</button>
+    <Button label="Success" @click="pay" severity="success" rounded />
   </div>
 </template>
 
 <script setup>
+import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 
 import { onMounted, ref } from "vue";
