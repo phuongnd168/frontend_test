@@ -87,6 +87,7 @@ const messages = {
 };
 
 const i18n = createI18n({
+   legacy: false,
   locale: "vi", // ngôn ngữ mặc định
   fallbackLocale: "en",
   messages,
