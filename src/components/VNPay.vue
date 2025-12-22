@@ -2,16 +2,18 @@
   <Toast />
   <div>
     <label>Amount (VND):</label>
-    <input v-model.number="amount" type="number" placeholder="100000" />
+    <InputText type="number" v-model.number="amount" />
 
     <label>Order ID:</label>
-    <input v-model="orderId" type="text" placeholder="ORDER123" />
+    <InputText type="text" v-model="orderId" />
 
     <button @click="pay">Pay with VNPay</button>
   </div>
 </template>
 
 <script setup>
+import InputText from "primevue/inputtext";
+
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import Toast from "primevue/toast";
