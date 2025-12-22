@@ -19,11 +19,16 @@ const orderId = ref("ORDER123");
 const pay = async () => {
   try {
     // gọi backend tạo URL VNPay
-    const res = await fetch(
+
+    const response = await axios.post(
       `https://karson-semicathartic-nondeprecatively.ngrok-free.dev/api/payment/vnpay/create?amount=${amount.value}&orderId=${orderId.value}`,
-      { method: "POST" }
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
     );
-    const data = await res.json();
+    const data = await response.json();
     if (data.paymentUrl) {
       // Chỉ redirect, không load JS VNPay
       window.location.href = data.paymentUrl;
