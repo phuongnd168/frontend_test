@@ -29,7 +29,7 @@ const pay = async () => {
         },
       }
     );
-    const data = await response.json();
+    const data = await response;
     if (data.paymentUrl) {
       // Chỉ redirect, không load JS VNPay
       window.location.href = data.paymentUrl;
