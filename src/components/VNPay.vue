@@ -1,4 +1,5 @@
 <template>
+  <Toast />
   <div>
     <label>Amount (VND):</label>
     <input v-model.number="amount" type="number" placeholder="100000" />
@@ -11,11 +12,34 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import Toast from "primevue/toast";
+import { useToast } from "primevue/usetoast";
+const toast = useToast();
+const route = useRoute();
+const status = route.query.status;
 
 const amount = ref(100000);
 const orderId = ref("ORDER123");
-
+onMounted(() => {
+  if (status === "success") {
+    toast.add({
+      severity: "success",
+      summary: "Thành công",
+      detail: "Thanh toán thành công",
+      life: 3000,
+    });
+  }
+  if (status === "error") {
+    toast.add({
+      severity: "danger",
+      summary: "Thành công",
+      detail: "Thanh toán thất bại",
+      life: 3000,
+    });
+  }
+});
 const pay = async () => {
   try {
     // gọi backend tạo URL VNPay
