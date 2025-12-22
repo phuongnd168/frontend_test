@@ -1,11 +1,15 @@
 <template>
   <Toast />
+
   <div>
     <label>Amount (VND):</label>
     <InputText type="number" v-model.number="amount" />
-
+  </div>
+  <div>
     <label>Order ID:</label>
     <InputText type="text" v-model="orderId" />
+  </div>
+  <div>
     <Button label="Success" @click="pay" severity="success" rounded />
   </div>
 </template>
